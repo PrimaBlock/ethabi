@@ -16,6 +16,7 @@ impl Writer {
 			ParamType::String => "string".to_owned(),
 			ParamType::FixedArray(ref param, len) => format!("{}[{}]", Writer::write(param), len),
 			ParamType::Array(ref param) => format!("{}[]", Writer::write(param)),
+			ParamType::Internal(ref ty, ref modifier) => format!("{} {}", ty, modifier),
 		}
 	}
 }

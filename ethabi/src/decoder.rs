@@ -199,7 +199,10 @@ fn decode_param(param: &ParamType, slices: &[[u8; 32]], offset: usize) -> Result
 			};
 
 			Ok(result)
-		}
+		},
+		ParamType::Internal(..) => {
+			return Err(ErrorKind::InvalidData.into());
+		},
 	}
 }
 

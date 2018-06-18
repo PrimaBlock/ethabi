@@ -3,6 +3,21 @@
 use std::fmt;
 use super::Writer;
 
+/// Modifier for internal parameter types.
+#[derive(Debug, Clone, PartialEq)]
+pub enum ParamModifier {
+	/// The storage modifier associated with internal paramter types.
+	Storage,
+}
+
+impl fmt::Display for ParamModifier {
+	fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+		match *self {
+			ParamModifier::Storage => "storage".fmt(fmt),
+		}
+	}
+}
+
 /// Function and event param types.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ParamType {
@@ -24,6 +39,8 @@ pub enum ParamType {
 	FixedBytes(usize),
 	/// Array with fixed size.
 	FixedArray(Box<ParamType>, usize),
+	/// Internal type.
+	Internal(String, ParamModifier),
 }
 
 impl fmt::Display for ParamType {

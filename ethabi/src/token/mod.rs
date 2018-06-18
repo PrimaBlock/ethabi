@@ -23,6 +23,7 @@ pub trait Tokenizer {
 			ParamType::Int(_) => Self::tokenize_int(value).map(Into::into).map(Token::Int),
 			ParamType::Array(ref p) => Self::tokenize_array(value, p).map(Token::Array),
 			ParamType::FixedArray(ref p, len) => Self::tokenize_fixed_array(value, p, len).map(Token::FixedArray),
+			ParamType::Internal(_, _) => Err(ErrorKind::InvalidData.into()),
 		}.chain_err(|| format!("Cannot parse {}", param))
 	}
 

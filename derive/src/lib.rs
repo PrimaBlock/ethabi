@@ -11,7 +11,7 @@ use std::{env, fs};
 use std::path::PathBuf;
 use proc_macro::TokenStream;
 use heck::{SnakeCase, CamelCase};
-use ethabi::{Result, ResultExt, Contract, Event, Function, Param, ParamType, Constructor};
+use ethabi::{Result, ResultExt, Contract, Event, Function, Param, ParamModifier, ParamType, Constructor};
 
 const ERROR_MSG: &'static str = "`derive(EthabiContract)` failed";
 
@@ -214,6 +214,13 @@ fn to_syntax_string(param_type: &ethabi::ParamType) -> quote::Tokens {
 			let param_type_quote = to_syntax_string(param_type);
 			quote! { ethabi::ParamType::FixedArray(Box::new(#param_type_quote), #x) }
 		}
+		ParamType::Internal(ref ty, ref modifier) => {
+			let modifier = match *modifier {
+				ParamModifier::Storage => quote! { ethabi::ParamModifier::Storage },
+			};
+
+			quote! { ethabi::ParamType::Internal(#ty.to_string(), #modifier) }
+		}
 	}
 }
 
@@ -249,7 +256,8 @@ fn rust_type(input: &ParamType) -> quote::Tokens {
 		ParamType::FixedArray(ref kind, size) => {
 			let t = rust_type(&*kind);
 			quote! { [#t, #size] }
-		}
+		},
+		ParamType::Internal(_, _) => quote! { ethabi::Address },
 	}
 }
 
@@ -276,7 +284,8 @@ fn template_param_type(input: &ParamType, index: usize) -> quote::Tokens {
 			quote! {
 				#t_ident: Into<[#u_ident; #size]>, #u_ident: Into<#t>
 			}
-		}
+		},
+		ParamType::Internal(_, _) => quote! { #t_ident: Into<ethabi::Address> },
 	}
 }
 
@@ -319,6 +328,7 @@ fn to_token(name: &quote::Tokens, kind: &ParamType) -> quote::Tokens {
 				}
 			}
 		},
+		ParamType::Internal(_, _) => quote! { ethabi::Token::Address(#name) },
 	}
 }
 
@@ -370,6 +380,7 @@ fn from_token(kind: &ParamType, token: &quote::Tokens) -> quote::Tokens {
 				}
 			}
 		},
+		ParamType::Internal(_, _) => quote! { #token.to_address().expect(super::INTERNAL_ERR) },
 	}
 }
 
